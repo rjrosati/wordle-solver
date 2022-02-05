@@ -34,7 +34,7 @@ I also included a self-contained implementation of wordle, for when you want to 
 The suggestions are left on, and there is no protection against entering words that aren't in the wordlist.
 The answer words are all from real wordles during 2022, so you may already know them.
 
-[!interactive_wordle.png]
+![Interactive wordle](interactive_wordle.png)
 
 ## Ranking wordle strategies
 
