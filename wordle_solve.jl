@@ -67,7 +67,7 @@ end
 
 function pretty_print_response(word,result)
     for i in 1:5
-        color = :black
+        color = :default
         if result[i] == '1'
             color = :light_yellow
         elseif result[i] == '2'
@@ -187,8 +187,9 @@ function interactive_wordle()
 end
 function rank_wordle_strategy(strategy::Symbol)
 
-    counts = zeros(length(words))
-    for (i,true_word) in ProgressBar(enumerate(words))
+    wordlist = words
+    counts = zeros(length(wordlist))
+    for (i,true_word) in ProgressBar(enumerate(wordlist))
         let_in_pos = Dict{Int,Char}()
         let_not_in_pos = Dict{Char,Vector{Int}}()
         let_not_in_word = Set{Char}()
