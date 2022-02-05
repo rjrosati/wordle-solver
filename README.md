@@ -8,7 +8,7 @@ The suggested word in the prompt is precisely this one. This strategy improves o
 
 To use, just
 
-```julia-repl
+```julia
 julia> include("wordle_solver.jl")
 ```
 
@@ -16,7 +16,7 @@ julia> include("wordle_solver.jl")
 To help with playing a wordle game, run `wordle_cheater()`. To accept the suggestion, just hit enter, or type your own word if you'd like to try something else.
 There's no checking that the words are valid, or that you only enter 0,1,2 in the wordle response section.
 
-```julia-repl
+```julia
 julia> wordle_cheater()
 Enter your starting word [default: reast] :
 Enter your response (Gray,Yellow,Green -> 0,1,2): 02010
@@ -33,30 +33,8 @@ Enter your next word [suggested: penis]:
 I also included a self-contained implementation of wordle, for when you want to procrastinate for more than one wordle game in a row.
 The suggestions are left on, and there is no protection against entering words that aren't in the wordlist.
 The answer words are all from real wordles during 2022, so you may already know them.
-```julia-repl
-julia> interactive_wordle()
-Enter your starting word [default: reast] :
-<font color="#E9AD0C">r</font><font color="#33DA7A">e</font><font color="#171421">ast</font>
-Word set length: 50
-Remaining letters, in order of frequency: oinhdlucmfywgpbvkxqjz
 
-Try 2
-Enter your next word [suggested: chino]: 
-<font color="#171421">chino</font>
-Word set length: 24
-Remaining letters, in order of frequency: dlumfywgpbvkxqjz
-
-Try 3
-Enter your next word [suggested: dumpy]: lumpy
-<font color="#171421">lum</font><font color="#E9AD0C">p</font><font color="#33DA7A">y</font>
-Word set length: 1
-Remaining letters, in order of frequency: dfwgbvkxqjz
-
-Try 4
-Enter your next word [suggested: perky]: 
-<font color="#33DA7A">perky</font>
-Congratulations!</pre>
-```
+[!interactive_wordle.png]
 
 ## Ranking wordle strategies
 
@@ -65,7 +43,7 @@ This function essentially plays wordle using the strategy's suggested words unti
 By default, it runs over the entire wordlist, even words that have never appeared in a wordle.
 Some of these have one or two double-letters, which prove pretty difficult for either a random or a letter-frequency-ranking strategy (worst case: 12 guesses!).
 
-```julia-repl
+```julia
 julia> count_rand = rank_wordle_strategy(:random)
 100.0%┣███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████┫ 5.8k/5.8k [00:40<00:00, 256it/s]
 5757-element Vector{Float64}:
