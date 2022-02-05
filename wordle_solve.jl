@@ -128,36 +128,66 @@ function wordle_cheater()
     let_not_in_pos = Dict{Char,Vector{Int}}()
     let_not_in_word = Set{Char}()
     word_set = copy(words)
-    print("Enter your starting word [default: reast] :")
+    print("Enter your starting word [default: reast]: ")
     word = readline()
     if length(word) == 0
         word = "reast"
+    else
+        while word ∉ words
+            print("Word not in dictionary, try again: ")
+            word = readline()
+        end
     end
-    while length(word_set) > 1
+    tries = 1
+    while tries <= 6
         print("Enter your response (Gray,Yellow,Green -> 0,1,2): ")
         result = readline()
+        while length(result) != 5 || any([r ∉ Set("012") for r in result])
+            print("Invalid result, try again: ")
+            result = readline()
+        end
         pretty_print_response(word,result)
         update_constraints_by_response!(word, result, let_in_pos, let_not_in_pos, let_not_in_word)
         word_set_reduction!(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
         println("Word set length: $(length(word_set))")
+        if length(word_set) == 1
+            println("Your word is:")
+            pretty_print_response(only(word_set),"22222")
+            break
+        end
         word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
         print("Enter your next word [suggested: $word]: ")
         newword = readline()
         if length(newword) != 0
+            while newword ∉ words
+                print("Word not in dictionary, try again: ")
+                newword = readline()
+            end
             word = newword
         end
+        tries += 1
     end
 end
-function interactive_wordle()
+
+function interactive_wordle(true_word::String = rand(wordle_answers))
+    true_word = lowercase(true_word)
+    if true_word ∉ words
+        println("Unfortunately $true_word is not in the dictionary")
+        return
+    end
     let_in_pos = Dict{Int,Char}()
     let_not_in_pos = Dict{Char,Vector{Int}}()
     let_not_in_word = Set{Char}()
     word_set = copy(words)
-    true_word = rand(wordle_answers)
-    print("Enter your starting word [default: reast] :")
+    print("Enter your starting word [default: reast]: ")
     word = readline()
     if length(word) == 0
         word = "reast"
+    else
+        while word ∉ words
+            print("Word not in dictionary, try again: ")
+            word = readline()
+        end
     end
     count = 1
     gameover = false
@@ -180,6 +210,10 @@ function interactive_wordle()
             print("Enter your next word [suggested: $word]: ")
             newword = readline()
             if length(newword) != 0
+                while newword ∉ words
+                    print("Word not in dictionary, try again: ")
+                    newword = readline()
+                end
                 word = newword
             end
         end
