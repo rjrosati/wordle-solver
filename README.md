@@ -14,7 +14,7 @@ julia> include("wordle_solver.jl")
 
 ## Cheating at wordle
 To help with playing a wordle game, run `wordle_cheater()`. To accept the suggestion, just hit enter, or type your own word if you'd like to try something else.
-There's no checking that the words are valid, or that you only enter 0,1,2 in the wordle response section.
+The wordle dictionary and the internal dictionary of this script are unfortunately not guaranteed to be identical. If you find a missing word, or know a better dictionary, please let me know :)
 
 ```julia
 julia> wordle_cheater()
@@ -31,10 +31,12 @@ Enter your next word [suggested: penis]:
 
 ## Playing wordle on your own
 I also included a self-contained implementation of wordle, for when you want to procrastinate for more than one wordle game in a row.
-The suggestions are left on, and there is no protection against entering words that aren't in the wordlist.
-The answer words are all from real wordles during 2022, so you may already know them.
 
 ![Interactive wordle](interactive_wordle.png)
+
+
+The suggestions are left on by default, or can be turned off by calling `interactive_wordle(suggestions=false)`. You can also start a game with a known answer by calling the function with it as the first argument e.g. `interactive_wordle("tests")`.
+The answer words are enforced to be in the script's dictionary, which unfortunately does not perfectly match the wordle dictionary.
 
 ## Ranking wordle strategies
 
