@@ -222,10 +222,10 @@ function interactive_wordle(true_word::String = rand(wordle_answers);suggestions
         else
             update_constraints_by_response!(word, result, let_in_pos, let_not_in_pos, let_not_in_word)
             word_set_reduction!(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
-            println("Word set length: $(length(word_set))")
+            println("\nTry $count")
             if suggestions
                 word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
-                println("\nTry $count")
+                println("Word set length: $(length(word_set))")
                 print("Enter your next word [suggested: $word]: ")
                 newword = readline()
                 if length(newword) != 0
