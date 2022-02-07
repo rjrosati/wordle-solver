@@ -45,6 +45,12 @@ function predict_best_word(word_set, let_in_pos, let_not_in_pos, let_not_in_word
         end
         sorted = sortperm(ranking)
         return search_set[sorted[end]]
+    elseif strategy == :majo
+        return rand(word_set)
+        #First tries: try a word with the highest density of missing letters, ranked by frequency (no attention to position yet). Do this till you get 3 letters in yellow or green.
+        #Create pdf of letters at every position in word, based on the dictionary for words that have those filled green and yellow positions.
+        #Take the guess with the most likely word.
+        #Create the pdf again and repeat.
     elseif strategy == :random
         return rand(word_set)
     else
@@ -80,6 +86,7 @@ end
 
 
 wordle_answers = [
+                  "boing",
                   "super",
                   "wrung",
                   "perky",
@@ -169,7 +176,7 @@ function wordle_cheater()
     end
 end
 
-function interactive_wordle(true_word::String = rand(wordle_answers))
+function interactive_wordle(true_word::String = rand(wordle_answers);suggestions=true)
     true_word = lowercase(true_word)
     if true_word ∉ words
         println("Unfortunately $true_word is not in the dictionary")
@@ -179,16 +186,27 @@ function interactive_wordle(true_word::String = rand(wordle_answers))
     let_not_in_pos = Dict{Char,Vector{Int}}()
     let_not_in_word = Set{Char}()
     word_set = copy(words)
-    print("Enter your starting word [default: reast]: ")
-    word = readline()
-    if length(word) == 0
-        word = "reast"
+    word = ""
+    if suggestions
+        print("Enter your starting word [default: reast]: ")
+        word = readline()
+        if length(word) == 0
+            word = "reast"
+        else
+            while word ∉ words
+                print("Word not in dictionary, try again: ")
+                word = readline()
+            end
+        end
     else
+        print("Enter your starting word: ")
+        word = readline()
         while word ∉ words
             print("Word not in dictionary, try again: ")
             word = readline()
         end
     end
+
     count = 1
     gameover = false
     while !gameover
@@ -205,11 +223,21 @@ function interactive_wordle(true_word::String = rand(wordle_answers))
             update_constraints_by_response!(word, result, let_in_pos, let_not_in_pos, let_not_in_word)
             word_set_reduction!(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
             println("Word set length: $(length(word_set))")
-            word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
-            println("\nTry $count")
-            print("Enter your next word [suggested: $word]: ")
-            newword = readline()
-            if length(newword) != 0
+            if suggestions
+                word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
+                println("\nTry $count")
+                print("Enter your next word [suggested: $word]: ")
+                newword = readline()
+                if length(newword) != 0
+                    while newword ∉ words
+                        print("Word not in dictionary, try again: ")
+                        newword = readline()
+                    end
+                    word = newword
+                end
+            else
+                print("Enter your next word: ")
+                newword = readline()
                 while newword ∉ words
                     print("Word not in dictionary, try again: ")
                     newword = readline()
