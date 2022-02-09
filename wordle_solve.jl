@@ -4,6 +4,20 @@ using ProgressBars
 
 words = readlines(download("https://www-cs-faculty.stanford.edu/~knuth/sgb-words.txt"))
 
+function check_word_set_length(word_set, word, response)
+    word_set2 = copy(word_set)
+    for i in eachindex(response)
+        c = response[i]
+        if c == '2'
+            filter!(w->w[i]==word[i], word_set2)
+        elseif c=='1'
+            filter!(w->occursin(word[i],w) && w[i]!=word[i], word_set2)
+        else
+            filter!(w->!occursin(word[i],w), word_set2)
+        end
+    end
+    return length(word_set2)
+end
 
 function update_constraints_by_response!(word, response, let_in_pos, let_not_in_pos, let_not_in_word)
     for i in eachindex(response)
@@ -45,6 +59,41 @@ function predict_best_word(word_set, let_in_pos, let_not_in_pos, let_not_in_word
         end
         sorted = sortperm(ranking)
         return search_set[sorted[end]]
+    elseif strategy == :max_entropy
+        entropies = zeros(length(word_set))
+        for j in eachindex(word_set)
+            for i in 1:(3^5-1)
+                response = string(digits(i,base=3)...)
+                newlen = check_word_set_length(word_set, word_set[j], response)
+                if newlen > 0
+                    entropies[j] += 1/length(word_set)*1/3^5 * log2(newlen)
+                end
+            end
+        end
+        if verbose
+            println("maximum entropy: $(maximum(entropies)) bits")
+        end
+        return word_set[argmax(entropies)]
+    elseif strategy == :cond_letter_freq
+        # instead of using all of english for letter frequencies, use the remaining wordlist
+        # also, tally letters per position
+        #function create_letter_lists(word_set)
+        #    l1 = Dict{Char,Int}()
+        #    l2 = Dict{Char,Int}()
+        #    l3 = Dict{Char,Int}()
+        #    l4 = Dict{Char,Int}()
+        #    l5 = Dict{Char,Int}()
+        #    for w in word_set
+        #        l1[w[1]] += 1
+        #        l2[w[2]] += 1
+        #        l3[w[3]] += 1
+        #        l4[w[4]] += 1
+        #        l5[w[5]] += 1
+        #    end
+        #    return ""
+        #end
+        return rand(word_set)
+
     elseif strategy == :majo
         return rand(word_set)
         #First tries: try a word with the highest density of missing letters, ranked by frequency (no attention to position yet). Do this till you get 3 letters in yellow or green.
@@ -176,7 +225,7 @@ function wordle_cheater()
     end
 end
 
-function interactive_wordle(true_word::String = rand(wordle_answers);suggestions=true)
+function interactive_wordle(true_word::String = rand(wordle_answers);suggestions=true,strategy=:letter_freq)
     true_word = lowercase(true_word)
     if true_word ∉ words
         println("Unfortunately $true_word is not in the dictionary")
@@ -224,8 +273,8 @@ function interactive_wordle(true_word::String = rand(wordle_answers);suggestions
             word_set_reduction!(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
             println("\nTry $count")
             if suggestions
-                word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
                 println("Word set length: $(length(word_set))")
+                word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word,strategy=strategy)
                 print("Enter your next word [suggested: $word]: ")
                 newword = readline()
                 if length(newword) != 0
