@@ -184,10 +184,11 @@ function wordle_cheater()
     let_not_in_pos = Dict{Char,Vector{Int}}()
     let_not_in_word = Set{Char}()
     word_set = copy(words)
+    suggested_word = "reast"
     print("Enter your starting word [default: reast]: ")
     word = readline()
     if length(word) == 0
-        word = "reast"
+        word = suggested_word
     else
         while word ∉ words
             print("Word not in dictionary, try again: ")
@@ -205,14 +206,16 @@ function wordle_cheater()
         pretty_print_response(word,result)
         update_constraints_by_response!(word, result, let_in_pos, let_not_in_pos, let_not_in_word)
         word_set_reduction!(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
-        println("Word set length: $(length(word_set))")
+	println("Word set length: $(length(word_set)) ($(length(word_set)/length(tword_set)*100)% of suggested word)")
+	println("Word set length: $(length(word_set)) ($(length(word_set)/length(tword_set)*100)% of suggested word)")
         if length(word_set) == 1
             println("Your word is:")
             pretty_print_response(only(word_set),"22222")
             break
         end
-        word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
-        print("Enter your next word [suggested: $word]: ")
+        suggested_word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
+        print("Enter your next word [suggested: $suggested_word]: ")
+	word = suggested_word
         newword = readline()
         if length(newword) != 0
             while newword ∉ words
@@ -225,18 +228,23 @@ function wordle_cheater()
     end
 end
 
-function interactive_wordle(true_word::String = rand(wordle_answers);suggestions=true,strategy=:letter_freq)
+function interactive_wordle(true_word::String = rand(wordle_answers);suggestions=true,strategy=:letter_freq,hardmode=false)
     true_word = lowercase(true_word)
     if true_word ∉ words
         println("Unfortunately $true_word is not in the dictionary")
         return
+    end
+    if hardmode
+	    error("notimplemented")
     end
     let_in_pos = Dict{Int,Char}()
     let_not_in_pos = Dict{Char,Vector{Int}}()
     let_not_in_word = Set{Char}()
     word_set = copy(words)
     word = ""
+    suggested_word = ""
     if suggestions
+	suggested_word = "reast"
         print("Enter your starting word [default: reast]: ")
         word = readline()
         if length(word) == 0
@@ -269,12 +277,23 @@ function interactive_wordle(true_word::String = rand(wordle_answers);suggestions
             println("Sorry, you've used all your tries. Better luck next time.")
             gameover = true
         else
+            # check ideal performance
+	    current_wordset_len = length(word_set)
+            tlet_in_pos = copy(let_in_pos)
+            tlet_not_in_pos = copy(let_not_in_pos)
+            tlet_not_in_word = copy(let_not_in_word)
+            tword_set = copy(word_set)
+            tresult = score_word(suggested_word,true_word)
+            update_constraints_by_response!(suggested_word, tresult, tlet_in_pos, tlet_not_in_pos, tlet_not_in_word)
+            word_set_reduction!(tword_set,tlet_in_pos,tlet_not_in_pos,tlet_not_in_word)
+            # actualy performance
             update_constraints_by_response!(word, result, let_in_pos, let_not_in_pos, let_not_in_word)
             word_set_reduction!(word_set,let_in_pos,let_not_in_pos,let_not_in_word)
             println("\nTry $count")
             if suggestions
-                println("Word set length: $(length(word_set))")
-                word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word,strategy=strategy)
+		    println("Word set length: $(length(word_set))  (was $current_wordset_len, suggested word would give: $(length(tword_set)))")
+                suggested_word = predict_best_word(word_set,let_in_pos,let_not_in_pos,let_not_in_word,strategy=strategy)
+		word = suggested_word
                 print("Enter your next word [suggested: $word]: ")
                 newword = readline()
                 if length(newword) != 0
