@@ -150,3 +150,8 @@ julia> mean.([count_letter,count_rand])
  5.284523189161021
  5.669445891957617
 ```
+
+# TODOs:
+
+  - word difficulty
+  - allow enforcing hard mode
